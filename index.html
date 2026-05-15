@@ -107,10 +107,36 @@
       <div class="box box--small box--right">
 
         <div class="chart-area">
-          <h2 class="box-title">Spending by Category</h2>
-          <div class="chart-container">
-            <canvas id="spending-chart"></canvas>
-            <p class="chart-empty" id="chart-empty-msg">No spending data</p>
+          <!-- Chart type tabs -->
+          <div class="chart-tabs">
+            <button class="chart-tab chart-tab--active" id="chart-tab-expense">
+              ➖ Expenses
+            </button>
+            <button class="chart-tab" id="chart-tab-income">
+              ➕ Income
+            </button>
+          </div>
+
+          <!-- Chart title updates with active tab -->
+          <h2 class="box-title" id="chart-title" style="margin-top:14px">Spending by Category</h2>
+
+          <!-- Doughnut chart -->
+          <div class="chart-container" id="chart-container">
+            <div class="doughnut-wrap">
+              <canvas id="spending-chart"></canvas>
+              <!-- Centre label inside the doughnut hole -->
+              <div class="doughnut-centre" id="doughnut-centre">
+                <span class="doughnut-centre__label" id="doughnut-label">Total</span>
+                <span class="doughnut-centre__value" id="doughnut-value">Rp 0</span>
+              </div>
+            </div>
+            <!-- Custom HTML legend -->
+            <div class="chart-legend" id="chart-legend"></div>
+            <!-- Empty state (shown when no data) -->
+            <div class="chart-empty-state" id="chart-empty-msg">
+              <span class="chart-empty-icon">📊</span>
+              <span>No data yet</span>
+            </div>
           </div>
         </div>
 

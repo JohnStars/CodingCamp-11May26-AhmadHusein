@@ -41,7 +41,6 @@ const amountInput      = document.getElementById('amount');
 const categorySelect   = document.getElementById('category');
 const btnSubmit        = document.getElementById('btn-submit');
 const chartCanvas      = document.getElementById('spending-chart');
-const chartEmptyMsg    = document.getElementById('chart-empty-msg');
 const themeToggleBtn   = document.getElementById('theme-toggle');
 const themeLabel       = document.getElementById('theme-label');
 const themeIcon        = document.getElementById('theme-icon');
@@ -284,44 +283,58 @@ function renderTransactionList() {
   });
 }
 
-// ── Render: Chart (expense only) ─────────────────────────────────────
+// ── Render: Chart ─────────────────────────────────────────────────────
 
-let spendingChart = null;
+let spendingChart  = null;
+let activeChartTab = 'expense'; // 'expense' | 'income'
 
-const COLOR_PALETTE = [
+const chartTabExpense = document.getElementById('chart-tab-expense');
+const chartTabIncome  = document.getElementById('chart-tab-income');
+const chartTitle      = document.getElementById('chart-title');
+const doughnutLabel   = document.getElementById('doughnut-label');
+const doughnutValue   = document.getElementById('doughnut-value');
+const chartLegend     = document.getElementById('chart-legend');
+const chartEmptyMsg   = document.getElementById('chart-empty-msg');
+const doughnutWrap    = document.querySelector('.doughnut-wrap');
+
+const EXPENSE_PALETTE = [
   '#6366f1', '#f59e0b', '#10b981',
   '#f43f5e', '#3b82f6', '#8b5cf6',
   '#ec4899', '#14b8a6', '#f97316', '#06b6d4',
 ];
 
-function getCategoryColor(name, index) {
-  const fixed = { Food: '#6366f1', Transport: '#f59e0b', Fun: '#10b981' };
-  return fixed[name] || COLOR_PALETTE[index % COLOR_PALETTE.length];
+const INCOME_PALETTE = [
+  '#16a34a', '#0ea5e9', '#8b5cf6',
+  '#f59e0b', '#10b981', '#6366f1',
+  '#ec4899', '#14b8a6', '#f97316', '#06b6d4',
+];
+
+const EXPENSE_FIXED_COLORS = { Food: '#6366f1', Transport: '#f59e0b', Fun: '#10b981' };
+const INCOME_FIXED_COLORS  = { Work: '#16a34a', 'Passive Income': '#0ea5e9', Business: '#8b5cf6' };
+
+function getCategoryColor(name, type, index) {
+  if (type === 'expense') return EXPENSE_FIXED_COLORS[name] || EXPENSE_PALETTE[index % EXPENSE_PALETTE.length];
+  return INCOME_FIXED_COLORS[name] || INCOME_PALETTE[index % INCOME_PALETTE.length];
 }
 
 function initChart() {
-  chartCanvas.style.display = 'none';
-  chartEmptyMsg.style.display = 'block';
-
   spendingChart = new Chart(chartCanvas, {
-    type: 'pie',
+    type: 'doughnut',
     data: {
       labels: [],
       datasets: [{
         data: [],
         backgroundColor: [],
-        borderWidth: 2,
-        borderColor: '#ffffff',
+        borderWidth: 0,          // no segment borders — cleaner look
+        hoverOffset: 8,          // segments lift on hover
+        borderRadius: 4,         // rounded segment ends
       }],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: true,
+      responsive: false,         // we control size via CSS
+      cutout: '68%',             // doughnut hole size
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: '#374151', padding: 16, font: { size: 13 } },
-        },
+        legend: { display: false },   // we use our own HTML legend
         tooltip: {
           callbacks: {
             label: (ctx) => {
@@ -331,48 +344,104 @@ function initChart() {
               return ` ${formatIDR(value)} (${pct}%)`;
             },
           },
+          backgroundColor: 'rgba(0,0,0,0.75)',
+          padding: 10,
+          cornerRadius: 8,
         },
+      },
+      animation: {
+        animateRotate: true,
+        duration: 400,
       },
     },
   });
+
+  // Start with empty state visible
+  showChartEmpty(true);
+}
+
+function showChartEmpty(isEmpty) {
+  if (isEmpty) {
+    doughnutWrap.style.display    = 'none';
+    chartLegend.style.display     = 'none';
+    chartEmptyMsg.classList.add('is-visible');
+  } else {
+    doughnutWrap.style.display    = 'block';
+    chartLegend.style.display     = 'flex';
+    chartEmptyMsg.classList.remove('is-visible');
+  }
 }
 
 function renderChart() {
   if (!spendingChart) return;
 
-  // Chart shows expense distribution only
-  const expenseOnly = transactions.filter(t => t.type === 'expense');
-  const totals = {};
-  expenseOnly.forEach(({ category, amount }) => {
+  const filtered = transactions.filter(t => t.type === activeChartTab);
+  const totals   = {};
+  filtered.forEach(({ category, amount }) => {
     totals[category] = (totals[category] || 0) + amount;
   });
 
   const labels = Object.keys(totals);
   const data   = Object.values(totals);
-  const colors = labels.map((l, i) => getCategoryColor(l, i));
+  const colors = labels.map((l, i) => getCategoryColor(l, activeChartTab, i));
+  const total  = data.reduce((a, b) => a + b, 0);
 
   if (labels.length === 0) {
-    chartCanvas.style.display = 'none';
-    chartEmptyMsg.style.display = 'block';
-  } else {
-    chartCanvas.style.display = 'block';
-    chartEmptyMsg.style.display = 'none';
+    showChartEmpty(true);
+    doughnutValue.textContent = formatIDR(0);
+    chartLegend.innerHTML = '';
+    spendingChart.data.labels                      = [];
+    spendingChart.data.datasets[0].data            = [];
+    spendingChart.data.datasets[0].backgroundColor = [];
+    spendingChart.update();
+    return;
   }
 
+  showChartEmpty(false);
+
+  // Update centre label
+  doughnutLabel.textContent = activeChartTab === 'expense' ? 'Expenses' : 'Income';
+  doughnutValue.textContent = formatIDR(total);
+
+  // Update chart data
   spendingChart.data.labels                      = labels;
   spendingChart.data.datasets[0].data            = data;
   spendingChart.data.datasets[0].backgroundColor = colors;
   spendingChart.update();
+
+  // Rebuild HTML legend
+  chartLegend.innerHTML = '';
+  labels.forEach((label, i) => {
+    const pct  = total > 0 ? ((data[i] / total) * 100).toFixed(1) : 0;
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `
+      <span class="legend-dot" style="background:${colors[i]}"></span>
+      <span class="legend-name">${escapeHtml(label)}</span>
+      <span class="legend-pct">${pct}%</span>
+      <span class="legend-amt">${formatIDR(data[i])}</span>
+    `;
+    chartLegend.appendChild(item);
+  });
 }
 
 function updateChartTheme(theme) {
+  // No Chart.js legend to update — our HTML legend inherits CSS variables automatically
   if (!spendingChart) return;
-  spendingChart.options.plugins.legend.labels.color =
-    theme === 'dark' ? '#cbd5e1' : '#374151';
-  spendingChart.data.datasets[0].borderColor =
-    theme === 'dark' ? '#1e293b' : '#ffffff';
   spendingChart.update();
 }
+
+// Chart tab switching
+function switchChartTab(type) {
+  activeChartTab = type;
+  chartTabExpense.classList.toggle('chart-tab--active', type === 'expense');
+  chartTabIncome.classList.toggle('chart-tab--active',  type === 'income');
+  chartTitle.textContent = type === 'expense' ? 'Spending by Category' : 'Income by Category';
+  renderChart();
+}
+
+chartTabExpense.addEventListener('click', () => switchChartTab('expense'));
+chartTabIncome.addEventListener('click',  () => switchChartTab('income'));
 
 // ── Master render ─────────────────────────────────────────────────────
 

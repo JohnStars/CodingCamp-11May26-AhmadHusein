@@ -35,9 +35,7 @@
 
   /* Income / Expense accent */
   --income-color:    #16a34a;
-  --income-bg:       rgba(22, 163, 74, 0.08);
   --expense-color:   #dc2626;
-  --expense-bg:      rgba(220, 38, 38, 0.08);
 }
 
 /* =====================
@@ -73,9 +71,7 @@
   --balance-minus:   #f87171;
 
   --income-color:    #4ade80;
-  --income-bg:       rgba(74, 222, 128, 0.08);
   --expense-color:   #f87171;
-  --expense-bg:      rgba(248, 113, 113, 0.08);
 }
 
 /* =====================
@@ -534,14 +530,6 @@ body {
   color: var(--text-secondary);
 }
 
-.summary-row--total {
-  font-weight: 700;
-  color: var(--text-primary);
-  border-top: 1px solid var(--border);
-  margin-top: 6px;
-  padding-top: 8px;
-}
-
 .summary-row__label { display: flex; align-items: center; gap: 6px; }
 .summary-row__amount { font-weight: 600; }
 
@@ -567,10 +555,6 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin-bottom: 8px;
-}
-
-.category-list-wrap {
-  margin-top: 4px;
 }
 
 .category-list {
@@ -679,6 +663,7 @@ body {
 .form-select {
   appearance: none;
   -webkit-appearance: none;
+  -moz-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
@@ -839,27 +824,160 @@ body {
 }
 
 .chart-area {
-  padding: 28px 32px 20px;
+  padding: 24px 28px 20px;
 }
 
-.chart-container {
-  position: relative;
+/* ── Chart type tabs ── */
+.chart-tabs {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 220px;
+  gap: 6px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 4px;
 }
 
-.chart-container canvas {
-  max-width: 100%;
-  max-height: 220px;
-}
-
-.chart-empty {
-  position: absolute;
-  font-size: 0.9rem;
+.chart-tab {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  background: transparent;
   color: var(--text-muted);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.chart-tab--active {
+  background-color: var(--btn-bg);
+  color: #ffffff;
+}
+
+.chart-tab:not(.chart-tab--active):hover {
+  background-color: var(--border);
+  color: var(--text-label);
+}
+
+/* ── Doughnut chart container ── */
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-height: 200px;
+}
+
+/* Wrapper that holds canvas + centre label */
+.doughnut-wrap {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+}
+
+.doughnut-wrap canvas {
+  width: 200px !important;
+  height: 200px !important;
+}
+
+/* Centre label inside the doughnut hole */
+.doughnut-centre {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
+  gap: 2px;
+}
+
+.doughnut-centre__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.doughnut-centre__value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+  max-width: 90px;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+/* ── Custom HTML legend ── */
+.chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legend-name {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-label);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.legend-pct {
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.legend-amt {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Empty state ── */
+.chart-empty-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 180px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.chart-empty-state.is-visible {
+  display: flex;
+}
+
+.chart-empty-icon {
+  font-size: 2.5rem;
+  opacity: 0.4;
 }
 
 /* =====================
@@ -960,4 +1078,251 @@ body {
 .btn-delete:hover {
   color: #ef4444;
   background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* =====================================================================
+   RESPONSIVE — Tablet & Mobile
+   All breakpoints are max-width only. Desktop styles above are untouched.
+   ===================================================================== */
+
+/* ── 768px: tablet — tighten spacing, keep two-column layout ── */
+@media (max-width: 768px) {
+  body {
+    padding: 20px 12px;
+  }
+
+  .box {
+    padding: 22px 24px;
+  }
+
+  .box--strip {
+    padding: 12px 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .strip-divider {
+    display: none;           /* hide vertical divider when strip wraps */
+  }
+
+  .strip-section--buttons {
+    width: 100%;             /* buttons row takes full width on its own line */
+    justify-content: flex-start;
+  }
+
+  .balance-amount {
+    font-size: 2.2rem;
+  }
+
+  .balance-stat__value {
+    font-size: 1.1rem;
+  }
+
+  /* Modals: slightly more padding on overlay */
+  .modal-overlay {
+    padding: 16px;
+  }
+}
+
+/* ── 640px: mobile — single column, stacked layout ── */
+@media (max-width: 640px) {
+  body {
+    padding: 14px 10px;
+  }
+
+  .app-wrapper {
+    gap: 14px;
+  }
+
+  .box {
+    padding: 18px 16px;
+    border-radius: 14px;
+  }
+
+  /* ── Balance box: reorder to balance → income/expense row ── */
+  .balance-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .balance-main {
+    order: -1;               /* balance amount shows first */
+    flex: none;
+    width: 100%;
+  }
+
+  .balance-amount {
+    font-size: 2rem;
+  }
+
+  /* Income and expense stats sit side by side below the balance */
+  .balance-stat {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 10px 14px;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    gap: 8px;
+  }
+
+  .balance-stat__label {
+    font-size: 0.75rem;
+  }
+
+  .balance-stat__value {
+    font-size: 1rem;
+  }
+
+  /* ── Controls strip: stack vertically ── */
+  .box--strip {
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .strip-section {
+    width: 100%;
+  }
+
+  .strip-section--buttons {
+    gap: 8px;
+  }
+
+  .btn-feature {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  /* ── Main row: stack form above chart/list ── */
+  .box-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .box--small {
+    width: 100%;
+  }
+
+  /* ── Right box: reduce inner padding ── */
+  .chart-area {
+    padding: 16px 16px 14px;
+  }
+
+  .section-divider {
+    margin: 0 16px;
+  }
+
+  .transaction-section {
+    padding: 16px 16px 20px;
+  }
+
+  /* ── Transaction list: allow more height on mobile since it's full width ── */
+  .transaction-list {
+    max-height: 260px;
+  }
+
+  /* ── Doughnut: slightly smaller on very narrow screens ── */
+  .doughnut-wrap {
+    width: 180px;
+    height: 180px;
+  }
+
+  .doughnut-wrap canvas {
+    width: 180px !important;
+    height: 180px !important;
+  }
+
+  /* ── Modals: slide up from bottom on mobile ── */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;   /* anchor to bottom of screen */
+  }
+
+  .modal,
+  .modal--wide {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;   /* flat bottom, rounded top */
+    max-height: 88vh;
+    animation: modalSlideUp 0.25s ease;
+  }
+
+  @keyframes modalSlideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .modal-header {
+    padding: 18px 20px 0;
+  }
+
+  .modal-body {
+    padding: 16px 20px 32px;   /* extra bottom padding for safe area */
+  }
+
+  /* ── Form tabs: equal width, larger tap target ── */
+  .form-tab {
+    padding: 10px 8px;
+    font-size: 0.85rem;
+  }
+
+  /* ── Chart tabs ── */
+  .chart-tab {
+    padding: 9px 8px;
+    font-size: 0.82rem;
+  }
+
+  /* ── Legend: allow amounts to wrap on narrow screens ── */
+  .legend-amt {
+    display: none;           /* hide IDR amount in legend on mobile — pct is enough */
+  }
+
+  .legend-item {
+    gap: 6px;
+  }
+}
+
+/* ── 400px: small phones — final tightening ── */
+@media (max-width: 400px) {
+  .balance-amount {
+    font-size: 1.7rem;
+  }
+
+  .balance-stat__value {
+    font-size: 0.92rem;
+  }
+
+  .btn-feature {
+    font-size: 0.75rem;
+    padding: 7px 8px;
+  }
+
+  /* Hide button text labels, keep icons only on very small screens */
+  .btn-feature__icon {
+    font-size: 1.1rem;
+  }
+
+  .box-title {
+    font-size: 1rem;
+  }
+
+  .doughnut-wrap {
+    width: 160px;
+    height: 160px;
+  }
+
+  .doughnut-wrap canvas {
+    width: 160px !important;
+    height: 160px !important;
+  }
+
+  .doughnut-centre__value {
+    font-size: 0.82rem;
+    max-width: 76px;
+  }
 }
