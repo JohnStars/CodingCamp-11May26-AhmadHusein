@@ -29,8 +29,15 @@
   --scrollbar-hover: #9ca3af;
 
   /* Balance status colours */
-  --balance-ok:      #16a34a;   /* green  */
-  --balance-over:    #ca8a04;   /* yellow */
+  --balance-ok:      #16a34a;
+  --balance-over:    #ca8a04;
+  --balance-minus:   #dc2626;
+
+  /* Income / Expense accent */
+  --income-color:    #16a34a;
+  --income-bg:       rgba(22, 163, 74, 0.08);
+  --expense-color:   #dc2626;
+  --expense-bg:      rgba(220, 38, 38, 0.08);
 }
 
 /* =====================
@@ -63,6 +70,12 @@
 
   --balance-ok:      #4ade80;
   --balance-over:    #fbbf24;
+  --balance-minus:   #f87171;
+
+  --income-color:    #4ade80;
+  --income-bg:       rgba(74, 222, 128, 0.08);
+  --expense-color:   #f87171;
+  --expense-bg:      rgba(248, 113, 113, 0.08);
 }
 
 /* =====================
@@ -115,13 +128,50 @@ body {
   text-align: center;
 }
 
+/* Three-column layout: income | balance | expense */
+.balance-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.balance-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.balance-stat__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.balance-stat__value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.balance-stat__value--income  { color: var(--income-color); }
+.balance-stat__value--expense { color: var(--expense-color); }
+
+.balance-main {
+  flex: 2;
+  text-align: center;
+}
+
 .balance-label {
   font-size: 0.95rem;
   font-weight: 500;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .balance-amount {
@@ -130,10 +180,9 @@ body {
   transition: color 0.3s ease;
 }
 
-/* Green when under/no limit */
-.balance--ok   { color: var(--balance-ok);   }
-/* Yellow when over limit */
-.balance--over { color: var(--balance-over); }
+.balance--ok    { color: var(--balance-ok);    }
+.balance--over  { color: var(--balance-over);  }
+.balance--minus { color: var(--balance-minus); }
 
 .balance-limit-note {
   margin-top: 6px;
@@ -156,14 +205,10 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1;
 }
 
-/* Second section pushes label to the left */
-.strip-section:last-child {
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 10px;
+.strip-section:first-child {
+  flex-shrink: 0;
 }
 
 .strip-divider {
@@ -242,19 +287,47 @@ body {
   min-width: 80px;
 }
 
-/* ── Spending limit controls ── */
-.limit-wrap {
+/* ── Feature buttons (strip right side) ── */
+.strip-section--buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
+.btn-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-label);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-feature:hover {
+  background-color: var(--border);
+  border-color: var(--border-focus);
+  color: var(--btn-bg);
+}
+
+.btn-feature:active { transform: scale(0.97); }
+
+.btn-feature__icon { font-size: 1rem; line-height: 1; }
+
+/* ── Limit input (used inside modal) ── */
 .limit-input-group {
   display: flex;
   align-items: center;
   border: 1px solid var(--border-input);
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   background-color: var(--bg-input);
   transition: border-color 0.2s ease;
@@ -266,8 +339,8 @@ body {
 }
 
 .limit-prefix {
-  padding: 6px 8px 6px 10px;
-  font-size: 0.85rem;
+  padding: 10px 8px 10px 14px;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-secondary);
   background-color: var(--bg-input);
@@ -277,55 +350,273 @@ body {
 .limit-input {
   border: none;
   outline: none;
-  padding: 6px 10px 6px 4px;
-  font-size: 0.9rem;
+  padding: 10px 14px 10px 4px;
+  font-size: 0.95rem;
   font-family: inherit;
   color: var(--text-primary);
   background-color: var(--bg-input);
-  width: 110px;
+  width: 100%;
   transition: background-color 0.3s ease;
 }
 
-/* Hide number input spinners */
 .limit-input::-webkit-outer-spin-button,
 .limit-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .limit-input[type=number]               { -moz-appearance: textfield; }
 
-.btn-limit {
-  padding: 6px 14px;
-  font-size: 0.82rem;
+/* ═══════════════════════════════════════
+   MODALS
+═══════════════════════════════════════ */
+
+/* Overlay backdrop */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  backdrop-filter: blur(2px);
+}
+
+.modal-overlay.is-open {
+  display: flex;
+}
+
+/* Modal card */
+.modal {
+  background-color: var(--bg-box);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: modalIn 0.22s ease;
+}
+
+.modal--wide {
+  max-width: 600px;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* Modal header */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 28px 0;
+}
+
+.modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  border-radius: 8px;
+  line-height: 1;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-input);
+}
+
+/* Modal body */
+.modal-body {
+  padding: 20px 28px 28px;
+}
+
+.modal-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+  line-height: 1.55;
+}
+
+.modal-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.modal-field-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  min-height: 16px;
+}
+
+/* Modal action buttons */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-modal-primary {
+  flex: 1;
+  padding: 11px 20px;
+  font-size: 0.9rem;
   font-weight: 600;
   font-family: inherit;
+  color: var(--btn-text);
+  background-color: var(--btn-bg);
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
   white-space: nowrap;
 }
 
-.btn-limit:active { transform: scale(0.97); }
+.btn-modal-primary:hover  { background-color: var(--btn-hover); }
+.btn-modal-primary:active { transform: scale(0.98); }
 
-.btn-limit--set {
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-}
-
-.btn-limit--set:hover { background-color: var(--btn-hover); }
-
-.btn-limit--remove {
-  background-color: transparent;
+.btn-modal-danger {
+  flex: 1;
+  padding: 11px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
   color: #ef4444;
+  background-color: transparent;
   border: 1px solid #ef4444;
-}
-
-.btn-limit--remove:hover {
-  background-color: rgba(239, 68, 68, 0.08);
-}
-
-.limit-current {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
   white-space: nowrap;
+}
+
+.btn-modal-danger:hover  { background-color: rgba(239, 68, 68, 0.08); }
+.btn-modal-danger:active { transform: scale(0.98); }
+
+/* ── Monthly Summary ── */
+.summary-empty {
+  text-align: center;
+  padding: 32px 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.summary-month {
+  margin-bottom: 20px;
+}
+
+.summary-month-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.summary-row--total {
+  font-weight: 700;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border);
+  margin-top: 6px;
+  padding-top: 8px;
+}
+
+.summary-row__label { display: flex; align-items: center; gap: 6px; }
+.summary-row__amount { font-weight: 600; }
+
+/* ── Custom Category ── */
+.category-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.category-add-row .form-input {
+  flex: 1;
+}
+
+.category-add-row .btn-modal-primary {
+  flex: 0 0 auto;
+  padding: 10px 18px;
+}
+
+.modal-section-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.category-list-wrap {
+  margin-top: 4px;
+}
+
+.category-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.category-item--default {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.btn-cat-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-cat-delete:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.category-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 10px 0 4px;
 }
 
 /* =====================
@@ -420,9 +711,126 @@ body {
 .btn-submit:hover  { background-color: var(--btn-hover); }
 .btn-submit:active { transform: scale(0.98); }
 
+/* Expense submit button (red) */
+.btn-submit--expense {
+  background-color: #dc2626;
+}
+.btn-submit--expense:hover { background-color: #b91c1c; }
+
+/* Income submit button (green) */
+.btn-submit--income {
+  background-color: #16a34a;
+}
+.btn-submit--income:hover { background-color: #15803d; }
+
 /* =====================
-   Right Box
+   Form Tabs (Expense / Income)
    ===================== */
+.form-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.form-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.form-tab--expense.form-tab--active {
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+.form-tab--income.form-tab--active {
+  background-color: #16a34a;
+  color: #ffffff;
+}
+
+.form-tab:not(.form-tab--active):hover {
+  background-color: var(--border);
+  color: var(--text-label);
+}
+
+/* =====================
+   Transaction amount colours
+   ===================== */
+.transaction-amount--income  { color: var(--income-color);  font-weight: 700; }
+.transaction-amount--expense { color: var(--expense-color); font-weight: 700; }
+
+/* =====================
+   Category modal tabs
+   ===================== */
+.cat-tabs {
+  display: flex;
+  gap: 8px;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.cat-tab {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-muted);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.cat-tab--active {
+  background-color: var(--btn-bg);
+  color: #ffffff;
+}
+
+.cat-tab:not(.cat-tab--active):hover {
+  background-color: var(--border);
+  color: var(--text-label);
+}
+
+.cat-panel--hidden { display: none; }
+
+/* Income modal button accent */
+.btn-modal--income {
+  background-color: #16a34a;
+}
+.btn-modal--income:hover { background-color: #15803d; }
+
+.btn-modal--expense {
+  background-color: #dc2626;
+}
+.btn-modal--expense:hover { background-color: #b91c1c; }
+
+/* =====================
+   Summary income/expense rows
+   ===================== */
+.summary-row--income  .summary-row__amount { color: var(--income-color); }
+.summary-row--expense .summary-row__amount { color: var(--expense-color); }
+.summary-row--net     .summary-row__amount { font-weight: 800; }
+
 .box--right {
   display: flex;
   flex-direction: column;

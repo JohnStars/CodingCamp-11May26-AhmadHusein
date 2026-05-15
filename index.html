@@ -12,103 +12,93 @@
 
     <!-- 1. BALANCE BOX -->
     <div class="box box--large">
-      <p class="balance-label">Total Balance</p>
-      <p class="balance-amount balance--ok" id="balance-display">Rp 0</p>
-      <p class="balance-limit-note" id="balance-limit-note"></p>
+      <div class="balance-stats">
+        <div class="balance-stat">
+          <span class="balance-stat__label">Total Income</span>
+          <span class="balance-stat__value balance-stat__value--income" id="income-display">Rp 0</span>
+        </div>
+        <div class="balance-main">
+          <p class="balance-label">Total Balance</p>
+          <p class="balance-amount balance--ok" id="balance-display">Rp 0</p>
+          <p class="balance-limit-note" id="balance-limit-note"></p>
+        </div>
+        <div class="balance-stat">
+          <span class="balance-stat__label">Total Expense</span>
+          <span class="balance-stat__value balance-stat__value--expense" id="expense-display">Rp 0</span>
+        </div>
+      </div>
     </div>
 
-    <!-- 2. CONTROLS STRIP: Theme toggle + Spending limit -->
+    <!-- 2. CONTROLS STRIP -->
     <div class="box box--strip">
-
-      <!-- Left: Theme toggle -->
       <div class="strip-section">
         <span class="strip-label">Appearance</span>
         <div class="theme-toggle-wrap">
           <span class="theme-icon" id="theme-icon">☀️</span>
           <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode">
-            <span class="toggle-track">
-              <span class="toggle-thumb"></span>
-            </span>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
           </button>
           <span class="theme-label" id="theme-label">Light Mode</span>
         </div>
       </div>
-
-      <!-- Vertical divider -->
       <div class="strip-divider"></div>
-
-      <!-- Right: Spending limit -->
-      <div class="strip-section">
-        <span class="strip-label">Spending Limit</span>
-        <div class="limit-wrap">
-          <div class="limit-input-group">
-            <span class="limit-prefix">Rp</span>
-            <input
-              class="limit-input"
-              type="number"
-              id="limit-input"
-              placeholder="e.g. 150000"
-              min="1"
-              step="1"
-              aria-label="Spending limit in IDR"
-            />
-          </div>
-          <button class="btn-limit btn-limit--set" id="btn-set-limit">Set Limit</button>
-          <button class="btn-limit btn-limit--remove" id="btn-remove-limit" style="display:none">Remove</button>
-        </div>
-        <span class="limit-current" id="limit-current"></span>
+      <div class="strip-section strip-section--buttons">
+        <button class="btn-feature" id="btn-open-limit">
+          <span class="btn-feature__icon">🎯</span> Spending Limit
+        </button>
+        <button class="btn-feature" id="btn-open-summary">
+          <span class="btn-feature__icon">📅</span> Monthly Summary
+        </button>
+        <button class="btn-feature" id="btn-open-category">
+          <span class="btn-feature__icon">🏷️</span> Custom Category
+        </button>
       </div>
-
     </div>
 
     <!-- 3. MAIN ROW -->
     <div class="box-row">
 
-      <!-- LEFT: Input Form -->
+      <!-- LEFT: Transaction Form with Expense/Income tabs -->
       <div class="box box--small">
-        <h2 class="box-title">Add Transaction</h2>
+
+        <!-- Tab switcher -->
+        <div class="form-tabs">
+          <button class="form-tab form-tab--expense form-tab--active" id="tab-expense" data-type="expense">
+            <span>➖</span> Add Expense
+          </button>
+          <button class="form-tab form-tab--income" id="tab-income" data-type="income">
+            <span>➕</span> Add Income
+          </button>
+        </div>
+
         <form id="transaction-form" novalidate>
 
           <div class="form-group">
             <label class="form-label" for="item-name">Item Name</label>
-            <input
-              class="form-input"
-              type="text"
-              id="item-name"
-              name="item-name"
-              placeholder="e.g. Lunch, Bus ticket"
-              maxlength="100"
-              autocomplete="off"
-            />
+            <input class="form-input" type="text" id="item-name" name="item-name"
+              placeholder="e.g. Lunch, Salary" maxlength="100" autocomplete="off" />
             <span class="form-error" id="error-item-name"></span>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="amount">Amount (Rp)</label>
-            <input
-              class="form-input"
-              type="number"
-              id="amount"
-              name="amount"
-              placeholder="e.g. 25000"
-              min="1"
-              step="1"
-            />
+            <input class="form-input" type="number" id="amount" name="amount"
+              placeholder="e.g. 25000" min="1" step="1" />
             <span class="form-error" id="error-amount"></span>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="category">Category</label>
             <select class="form-input form-select" id="category" name="category">
-              <option value="" disabled selected>Select a category</option>
-              <option value="Food">🍔 Food</option>
-              <option value="Transport">🚌 Transport</option>
-              <option value="Fun">🎉 Fun</option>
+              <!-- Rebuilt by JS based on active tab -->
             </select>
             <span class="form-error" id="error-category"></span>
           </div>
 
-          <button class="btn-submit" type="submit">Add Transaction</button>
+          <!-- Submit button — colour changes with active tab -->
+          <button class="btn-submit btn-submit--expense" id="btn-submit" type="submit">
+            Add Expense
+          </button>
 
         </form>
       </div>
@@ -129,14 +119,119 @@
         <div class="transaction-section">
           <h2 class="box-title">Transactions</h2>
           <ul class="transaction-list" id="transaction-list">
-            <li class="transaction-empty" id="transaction-empty-msg">No transactions yet</li>
+            <li class="transaction-empty">No transactions yet</li>
           </ul>
         </div>
 
       </div>
-
     </div>
+  </div>
 
+  <!-- ═══ MODAL: Spending Limit ═══ -->
+  <div class="modal-overlay" id="modal-limit" role="dialog" aria-modal="true" aria-labelledby="modal-limit-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-limit-title">🎯 Spending Limit</h2>
+        <button class="modal-close" data-close="modal-limit" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Set a limit on your <strong>total expenses</strong>. The balance turns <strong style="color:#ca8a04">yellow</strong> when your expenses exceed the limit.</p>
+        <div class="modal-field-group">
+          <label class="form-label" for="modal-limit-input">Limit Amount (Rp)</label>
+          <div class="limit-input-group">
+            <span class="limit-prefix">Rp</span>
+            <input class="limit-input" type="number" id="modal-limit-input"
+              placeholder="e.g. 150000" min="1" step="1" />
+          </div>
+          <span class="modal-field-hint" id="modal-limit-current"></span>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-modal-primary" id="btn-modal-set-limit">Set Limit</button>
+          <button class="btn-modal-danger" id="btn-modal-remove-limit">Remove Limit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Monthly Summary ═══ -->
+  <div class="modal-overlay" id="modal-summary" role="dialog" aria-modal="true" aria-labelledby="modal-summary-title">
+    <div class="modal modal--wide">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-summary-title">📅 Monthly Summary</h2>
+        <button class="modal-close" data-close="modal-summary" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="summary-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Custom Category ═══ -->
+  <div class="modal-overlay" id="modal-category" role="dialog" aria-modal="true" aria-labelledby="modal-category-title">
+    <div class="modal modal--wide">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-category-title">🏷️ Custom Categories</h2>
+        <button class="modal-close" data-close="modal-category" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Add custom categories for expenses and income. They'll appear in the transaction form alongside the defaults.</p>
+
+        <!-- Category type tabs -->
+        <div class="cat-tabs">
+          <button class="cat-tab cat-tab--active" id="cat-tab-expense" data-cat-type="expense">
+            ➖ Expense Categories
+          </button>
+          <button class="cat-tab" id="cat-tab-income" data-cat-type="income">
+            ➕ Income Categories
+          </button>
+        </div>
+
+        <!-- Expense panel -->
+        <div class="cat-panel" id="cat-panel-expense">
+          <div class="modal-field-group" style="margin-top:16px">
+            <label class="form-label" for="new-expense-cat-input">New Expense Category</label>
+            <div class="category-add-row">
+              <input class="form-input" type="text" id="new-expense-cat-input"
+                placeholder="e.g. Health, Shopping" maxlength="50" autocomplete="off" />
+              <button class="btn-modal-primary btn-modal--expense" id="btn-add-expense-cat">Add</button>
+            </div>
+            <span class="form-error" id="error-expense-cat"></span>
+          </div>
+          <p class="modal-section-label">Default Expense Categories</p>
+          <ul class="category-list">
+            <li class="category-item category-item--default">🍔 Food</li>
+            <li class="category-item category-item--default">🚌 Transport</li>
+            <li class="category-item category-item--default">🎉 Fun</li>
+          </ul>
+          <p class="modal-section-label" style="margin-top:14px">Custom Expense Categories</p>
+          <ul class="category-list" id="custom-expense-cat-list"></ul>
+          <p class="category-empty" id="custom-expense-cat-empty">No custom expense categories yet</p>
+        </div>
+
+        <!-- Income panel -->
+        <div class="cat-panel cat-panel--hidden" id="cat-panel-income">
+          <div class="modal-field-group" style="margin-top:16px">
+            <label class="form-label" for="new-income-cat-input">New Income Category</label>
+            <div class="category-add-row">
+              <input class="form-input" type="text" id="new-income-cat-input"
+                placeholder="e.g. Freelance, Dividend" maxlength="50" autocomplete="off" />
+              <button class="btn-modal-primary btn-modal--income" id="btn-add-income-cat">Add</button>
+            </div>
+            <span class="form-error" id="error-income-cat"></span>
+          </div>
+          <p class="modal-section-label">Default Income Categories</p>
+          <ul class="category-list">
+            <li class="category-item category-item--default">💼 Work</li>
+            <li class="category-item category-item--default">📈 Passive Income</li>
+            <li class="category-item category-item--default">🏢 Business</li>
+          </ul>
+          <p class="modal-section-label" style="margin-top:14px">Custom Income Categories</p>
+          <ul class="category-list" id="custom-income-cat-list"></ul>
+          <p class="category-empty" id="custom-income-cat-empty">No custom income categories yet</p>
+        </div>
+
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
