@@ -1,0 +1,84 @@
+/* =====================
+   Reset & Base
+   ===================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  color: #1a1a2e;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 16px;
+}
+
+/* =====================
+   App Wrapper
+   ===================== */
+.app-wrapper {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* =====================
+   Shared Box Styles
+   ===================== */
+.box {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* =====================
+   Big Box (Balance)
+   ===================== */
+.box--large {
+  text-align: center;
+}
+
+.balance-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.balance-amount {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+/* =====================
+   Bottom Row (Two Small Boxes)
+   ===================== */
+.box-row {
+  display: flex;
+  gap: 20px;
+}
+
+.box--small {
+  flex: 1;
+  min-width: 0;
+}
+
+.box-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}

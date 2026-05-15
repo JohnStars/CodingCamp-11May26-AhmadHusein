@@ -1,0 +1,40 @@
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense & Budget Visualizer</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="app-wrapper">
+
+    <!-- TOP SECTION: Big balance box -->
+    <div class="box box--large">
+      <p class="balance-label">Total Balance</p>
+      <p class="balance-amount" id="balance-display">Rp 0</p>
+    </div>
+
+    <!-- BOTTOM SECTION: Two smaller boxes side by side -->
+    <div class="box-row">
+
+      <!-- Left box: Input Form -->
+      <div class="box box--small">
+        <h2 class="box-title">Add Transaction</h2>
+        <!-- form content will go here -->
+      </div>
+
+      <!-- Right box: Transaction List -->
+      <div class="box box--small">
+        <h2 class="box-title">Transactions</h2>
+        <!-- transaction list will go here -->
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
